@@ -1,0 +1,72 @@
+from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+import pandas as pd
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import StratifiedKFold
+import numpy as np
+from sklearn.model_selection import cross_val_score
+import time
+
+dt=pd.read_csv("/Users/Wang/source/IE517/hw6/ccdefault.csv")
+# Create feature and target arrays
+X = dt.iloc[:,1:24]
+y = dt.iloc[:,24]
+X_train, X_test, y_train, y_test =train_test_split(X, y, test_size = 0.3, stratify=y,random_state=1)
+sc=StandardScaler()
+sc.fit(X_train)
+X_train_std=sc.transform(X_train)
+X_test_std=sc.transform(X_test)
+for i in [1,10,25,50,100]:
+    start_=time.process_time()
+    #rf = RandomForestClassifier(criterion='gini',n_estimators=i,random_state=1,n_jobs=2)
+    rf = RandomForestClassifier(n_estimators=i)
+    # Fit 'rf' to the training set
+    rf.fit(X_train, y_train)
+    # Predict the test set labels 'y_pred'
+    y_train_pred = rf.predict(X_train_std)
+    y_test_pred = rf.predict(X_test_std)
+    acc_train=accuracy_score(y_train, y_train_pred)
+    acc_test = accuracy_score(y_test, y_test_pred)
+    cv_scores =cross_val_score(rf, X_train_std, y_train, cv=10)
+    end_=time.process_time()
+    print(i,':')
+    print('in sample accuracy',acc_train)
+    print('out of sample accuracy',acc_test)
+    print('cv accuracy',np.mean(cv_scores))
+    print('time',end_-start_)
+
+
+# In[30]:
+
+
+feat_labels=dt.columns[1:24]
+forest=RandomForestClassifier(n_estimators=100)
+forest.fit(X_train_std,y_train)
+importances=forest.feature_importances_
+indices=np.argsort(importances)[::-1]
+xlabel=[]
+for f in range(X_train_std.shape[1]):
+    print("%2d)%-*s%f"%(f+1,30,feat_labels[indices[f]],importances[indices[f]]))
+    xlabel.append(feat_labels[indices[f]])
+plt.title('feature importance')
+plt.bar(range(X_train.shape[1]),importances[indices],align='center')
+plt.xticks(range(X_train_std.shape[1]),xlabel,rotation=90)
+plt.xlim([-1,X_train_std.shape[1]])
+plt.tight_layout()
+plt.show()
+
+
+# In[14]:
+
+
+importances_rf = pd.Series(rf.feature_importances_, index = X.columns)
+# Sort importances_rf
+sorted_importances_rf = importances_rf.sort_values()
+# Make a horizontal bar plot
+sorted_importances_rf.plot(kind='barh', color='lightgreen')
+plt.show()
