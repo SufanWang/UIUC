@@ -1,0 +1,110 @@
+---
+title: "IE 522 HW11"
+author: "Sufan Wang"
+date: "2020/11/15"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+1. (1 point) Assume a normal inverse Gaussian model for the price of a stock. What ARIMA process is the daily log price series $\{\ln(S_0),\ln(S_1),\ln(S_2),\cdots\}$?
+The ARIMA process is ARIMA(0,1,0)
+
+Monthly risk free interest rates from Jan 1960 to Dec 2002 could be obtained using the following code. Finish questions #2 to #6.
+```{r,warning=FALSE,message=FALSE}
+library(Ecdat)
+data(Capm)
+r=Capm$rf
+n=length(r)
+
+```
+
+2. (1 point) Construct a time series plot for monthly rates. Is it stationary? 
+```{r}
+plot(ts(r,start=c(1960,1),frequency =12),ylab="monthly rates" )
+```
+It is not stationary.
+
+    
+3. (1 point) Use auto.arima to determine what ARIMA model fits the interest rate series $r$ the best. What's the corresponding ARMA process for monthly changes? Give parameters of the process. 
+```{r}
+library(forecast)
+fit=auto.arima(r)
+fit
+```
+
+The corresponding ARIMA process for monthly rate is ARIMA(1,1,1),ar1=0.4551,ma1=-0.6761.sigma^2=0.004751
+```{r}
+fit_diff=auto.arima(diff(r))
+fit_diff
+```
+the corresponding ARMA process for monthly changes is  ARMA(1,1).ar1=0.4551,ma1=-0.6761
+4. (1 point) Using the fit you obtain in question 3 for monthly changes, forecast the monthly change from Dec 2002 to Jan 2003. What's the corresponding forecast for the interest rate in Jan 2003? 
+```{r}
+f_diff=forecast(fit_diff,1,level=90)
+f_diff
+```
+The monthly change from Dec 2002 to Jan 2003 is 0.005465171.
+```{r}
+f=forecast(fit,1,level=90)
+f
+```
+the corresponding forecast for the interest rate in Jan 2003 is 0.1154652.
+
+5. (1 point) What's the 90% prediction interval for the monthly change from Dec 2002 to Jan 2003? What's the corresponding 90% prediction interval for the interest rate in Jan 2003? 
+
+The 90% prediction interval for the monthly change from Dec 2002 to Jan 2003 is[-0.1079146,0.1188449].
+The corresponding 90% prediction interval for the interest rate in Jan 2003 is[0.002085399,0.2288449
+].
+
+6. (1 point) If you try to produce a $k$-step-ahead forecast, when $k\rightarrow+\infty$, what'll be your forecast for the monthly change? What'll be the variance of the forecasting error? 
+```{r}
+mu=mean(diff(r))
+mu
+```
+The forecast for the monthly change is  -0.0004271845.
+```{r}
+theta_1=-0.6761
+phi_1=0.4551
+sigma_2=0.004751
+var=((1+theta_1^2+2*phi_1*theta_1)*sigma_2)/(1-phi_1^2)
+var
+```
+The variance of the forecasting error is 0.005043658.
+
+7. (1 point) Suppose you want to predict the total score of a course using the following model:
+$$
+    Y=\beta_1+\beta_2X_2+\beta_3X_3+\beta_4X_4+\epsilon,
+$$
+where $X_2$ is Exam 1 score, $X_3$ is Exam 2 score and $X_4$ is the average score of Exam 1 and Exam 2. What assumption is violated for this linear regression model? Why? 
+
+It violated no multicollinearity assumption because no multicollinearity requires that the K columns be linearly independent.
+
+Weekly AAA corporate bond yields and 10-year treasury rates from 2/16/1977 to 12/29/1993 can be found in "InterestRates.csv" on compass. dAAA and dcm10 are the corresponding weekly changes. 
+```{r}
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("InterestRates.csv",header=TRUE,fileEncoding="UTF-8-BOM")
+```
+8. (1 point) Consider the linear regression model 
+$$
+    dAAA=\beta_1+\beta_2\cdot dcm10+\epsilon.
+$$
+What are the OLS estimates for $\beta_1,\beta_2$?
+```{r}
+dAAA = diff(data$aaa)
+dcm10 = diff(data$cm10)
+fit_OLS=lm(dAAA~dcm10)
+summary(fit_OLS)
+```
+the OLS estimates for $\beta_1$ is -0.0001094,$\beta_2$ is 0.6157616
+
+
+9. (1 point) What is the estimate for $\mathbb{E}[dAAA|dcm10=0]$?
+
+The estimate for $\mathbb{E}[dAAA|dcm10=0]$ is -0.0001094.
+
+
+10. (1 point) What's the OLS estimate for $\sigma$? Here $\sigma^2$ is the conditional variance of $\epsilon$.  What's the corresponding degrees of freedom? 
+
+The OLS estimate for $\sigma$ is 0.06588,the corresponding degrees of freedom is 878.
+

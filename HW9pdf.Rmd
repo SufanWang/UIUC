@@ -1,0 +1,90 @@
+---
+title: "IE 522 HW09"
+author: "null"
+date: "null"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+In the following, $\{\epsilon_t\}$ is a white noise with variance $\sigma^2_\epsilon$. 
+
+For problems 1-4, consider a MA(3) process $Y_t=\mu+\epsilon_t+\theta_1\epsilon_{t-1}+\theta_2\epsilon_{t-2}+\theta_3\epsilon_{t-3}$. 
+
+1. (1 point) For what $\theta_1, \theta_2, \theta_3$, is ${Y_t}$ stationary (here stationarity refers to weak stationarity)?
+
+
+
+
+
+2. (1 point) What's the variance of $Y_t$?
+
+
+
+
+    
+3. (1 point) What's the lag-1 autocorrelation? 
+
+
+
+
+
+4. (1 point) What's the lag-4 autocorrelation? 
+
+
+
+
+
+5. (1 point) For the following dataset, plot the acf. 
+\scriptsize
+    ```{r}
+    x=read.table("https://faculty.chicagobooth.edu/-/media/faculty/ruey-s-tsay/teaching/fts3/m-ibm3dx2608.txt",header=TRUE)
+    r=x$vwrtn
+    ```
+\normalsize
+
+```{r}
+x=read.table("https://faculty.chicagobooth.edu/-/media/faculty/ruey-s-tsay/teaching/fts3/m-ibm3dx2608.txt",header=TRUE)
+r=x$vwrtn
+plot(acf(r))
+```
+
+
+
+6. (1 point) Fit MA models up to order 5 to the above dataset. Which MA model fits the data the best? Report the corresponding parameters of the model. 
+```{r}
+arima(r,order=c(0,0,1))
+arima(r,order=c(0,0,2))
+arima(r,order=c(0,0,3))
+arima(r,order=c(0,0,4))
+arima(r,order=c(0,0,5))
+```
+MA(5) fits the data the best.
+$\theta_1=0.1201, \theta_2=0.0022, \theta_3=-0.1169,\theta_4=-0.0120,\theta_5=0.0797,\mu= 0.0089$
+
+
+7. (1 point) Let $\phi(L)=1+\frac{1}{2}L$. What's $\phi(L)^{-1}$?
+
+$\phi(L)^{-1}=1-\frac{1}{2}L+\frac{1}{4}L^{2}-...$
+
+
+
+8. (1 point) Is $\phi(L)^{-1}$ absolutely summable? Is $\phi(L)^{-1}\epsilon_t$ stationary? 
+
+$\phi(L)^{-1}$ is absolutely summable because $\mid\phi1\mid=\frac{1}{2}<1$.
+$\phi(L)^{-1}\epsilon_t$ is stationary because $\epsilon_t$ is stationary.
+
+
+
+9. (1 point) Consider an AR(1) process $Y_t=3-\frac{1}{2}Y_{t-1}+\epsilon_t$. Is $\{Y_t\}$ stationary? What's the mean of $Y_t$?
+
+
+
+
+
+10. (1 point) Provide the MA($\infty$) representation for $Y_t$ in question 9. 
+
+
+
+

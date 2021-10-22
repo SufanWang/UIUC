@@ -1,0 +1,115 @@
+---
+title: "IE 522 HW06"
+author: "Sufan Wang"
+date: "2020/10/05"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+Consider a sample $\{x_1,\cdots,x_n\}$ from an exponential distribution with pdf $p(x|\lambda)=\lambda e^{-\lambda x}, x>0$. For a random variable $X$ with this distribution, $\mathbb{E}[X]=\frac{1}{\lambda}$, $var(X)=\frac{1}{\lambda^2}$.
+
+1. (1 point) Derive the maximum likelihood estimate $\hat{\lambda}$ for $\lambda$ and compute its value for the data given in compass2g (exp.csv).
+```{R}
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("exp.csv",header=TRUE,fileEncoding="UTF-8-BOM")
+n=nrow(data)
+xbar=mean(data$sample)
+lamda=1/xbar
+print(lamda)
+```
+
+
+2. (1 point) Let $\theta=1/\lambda$. For the given data set, compute the maximum likelihood estimate for $\theta$.
+```{r}    
+cita=xbar
+print(cita)
+```    
+    
+
+3. (1 point) Derive the Fisher information for $\lambda$.
+```{r}  
+fisher=n/(lamda*lamda)
+print(fisher)
+```
+
+
+4. (1 point) For the given data set, compute the estimated standard error for the MLE $\hat{\lambda}$ you obtain in question 1.
+```{r}  
+se=sqrt(1/fisher)
+print(se)
+```
+
+
+5. (1 point) For the given data set, using the asymptotic normality of MLE, construct an approximate 95% confidence interval for $\lambda$. 
+```{r}  
+z1=qnorm(0.975)
+l=lamda-z1*se
+u=lamda+z1*se
+print(l)
+print(u)
+```
+
+
+
+The file ZMTSLA.csv contains Zoom (ZM) stock prices in a certain period. Assume that the daily log returns of ZM are i.i.d.
+
+6. (1 point) Compute the daily log returns of Zoom. Plot the empirical cdf of Zoom's daily log return. 
+```{R}
+setwd("C:/Users/Wang/source/R/IE522")
+df=read.csv("ZMTSLA(1).csv",header=TRUE)
+m=nrow(df)
+price=df$ZM
+x=log(price[2:m]/price[1:(m-1)])
+Fhat=ecdf(x)
+plot(Fhat,verticals=TRUE,do.points=FALSE)
+```
+
+
+
+7. (1 point) What's the sample kurtosis of ZM's daily log return? What does it mean for the tails of the probability distribution of ZM's return (compared to the tails of normal distributions)?
+```{R}
+library(moments)
+print(kurtosis(x,na.rm=TRUE))
+```
+
+
+
+8. (1 point) Use bootstrap to simulate $B=5000$ values of the sample kurtosis from the empirical cdf. Construct a histogram of the sample kurtoses. 
+```{r}
+B=5000
+len=length(x)
+sample_medians=rep(0,B)
+sample_means=rep(0,B)
+sample_kurtosis=rep(0,B)
+for (b in 1:B){
+  xstar=sample(x,len,replace=TRUE)
+  sample_medians[b]=median(xstar)
+  sample_means[b]=mean(xstar)
+  sample_kurtosis[b]=kurtosis(xstar)
+}
+hist(sample_kurtosis)
+```
+
+
+
+9. (1 point) Use the sample kurtoses you simulated in question 8, estimate the standard error of the sample kurtosis for the return of ZM.
+```{R}
+print(sd(sample_kurtosis))
+```
+
+
+10. (1 point) Use the sample kurtoses you simulated in question 8, estimate the probability that the sample kurtosis is greater than or equal to 6. (You could use the ifelse function in R)
+```{R}
+num=0
+for (i in 1:B){
+  if (sample_kurtosis[i] >=6){
+    num=num+1
+  }
+}
+p=num/B
+p
+```
+
+

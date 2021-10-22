@@ -1,0 +1,51 @@
+#1.
+z=qnorm(1-0.025)
+xbar=883/1963
+l=(xbar-z*sqrt(xbar*(1-xbar)/1963))
+u=(xbar+z*sqrt(xbar*(1-xbar)/1963))
+print(l)
+print(u)
+#2.1
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("ZMTSLA.csv",header=TRUE,fileEncoding="UTF-8-BOM")
+n=nrow(data)
+pZM<-data$ZM
+pTSLA<-data$TSLA
+lZM<-pZM
+for(i in 2:n)
+{
+  lZM[i-1]<-log(pZM[i]/pZM[i-1])
+}
+lZM[n]<-NA
+
+lTSLA<-pTSLA
+for(i in 2:n)
+{
+  lTSLA[i-1]<-log(pTSLA[i]/pTSLA[i-1])
+}
+lTSLA[n]<-NA
+adjdata<-data.frame(data,lZM,lTSLA)
+adjdata[1:3,]
+qqnorm(adjdata$lTSLA)
+qqline(adjdata$lTSLA)
+#2.2
+volatility=sqrt(252)*sd(adjdata$lTSLA,na.rm=TRUE)
+print(volatility)
+#2.3
+meanTSLA=mean(adjdata$lTSLA[1:356])
+sdTSLA=sd(adjdata$lTSLA,na.rm=TRUE)
+lm=meanTSLA-z*sdTSLA/sqrt(356)
+um=meanTSLA+z*sdTSLA/sqrt(356)
+print(lm)
+print(um)
+#2.4
+z1=qnorm(0.95)
+lower_bound=meanTSLA-z1*sdTSLA/sqrt(356)
+print(lower_bound)
+#2.5
+meanZM=mean(adjdata$lZM[1:356])
+sdZM=sd(adjdata$lZM,na.rm=TRUE)
+diff_mean_l=meanTSLA-meanZM-z*sqrt((sdTSLA^2)/356+(sdZM^2)/356)
+diff_mean_u=meanTSLA-meanZM+z*sqrt((sdTSLA^2)/356+(sdZM^2)/356)
+print(diff_mean_l)
+print(diff_mean_u)

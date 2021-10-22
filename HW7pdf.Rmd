@@ -1,0 +1,124 @@
+
+---
+title: "IE 522 HW07"
+author: "Sufan Wang"
+date: "2020.10.12"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+The file ZMTSLA.csv on compass2g contains prices of ZM and TSLA over a certain period. Compute daily log returns for both stocks. Denote ZM returns by $\{X_1,\cdots,X_n\}$ with mean $\mu_{zm}$, TSLA returns by $\{Y_1,\cdots,Y_n\}$ with mean $\mu_{tsla}$. Let $D_i=X_i-Y_i, 1\le i\le n,$ be the differences of the log returns of the two stocks.
+```{R}
+
+setwd("C:/Users/Wang/source/R/IE522")
+dt=read.csv("ZMTSLA(2).csv",header=TRUE,fileEncoding="UTF-8-BOM")
+m=nrow(dt)
+price_zm=dt$ZM
+x=log(price_zm[2:m]/price_zm[1:(m-1)])
+price_tsla=dt$TSLA
+y=log(price_tsla[2:m]/price_tsla[1:(m-1)])
+D=x-y
+n=length(D)
+mu0=0
+se=sd(D)/sqrt(length(D))
+z0=(mean(D)-mu0)/se
+Fhat=ecdf(x)
+```
+1. (1 point) Conduct a runs test. At significance level $\alpha=5\%$, is there strong enough evidence that the returns of ZM are not independent? What about $D_i$'s? 
+
+```{r}
+library(randtests)
+runs.test(x,alternative="two.sided",threshold=median(x),pvalue="normal",plot=FALSE)
+runs.test(D,alternative="two.sided",threshold=median(D),pvalue="normal",plot=FALSE)
+
+```
+Accept H0.
+At significance level $\alpha=5\%$, there is strong enough evidence that the returns of ZM are not independent, and so as $D_i$'s.
+
+2. (1 point) Conduct a Shapiro Wilk normality test. At significance level $\alpha=5\%$, is there strong enough evidence that the returns of ZM are not normal?
+```{r}
+shapiro.test(x)   
+```
+reject H0. So the returns of ZM are not normal.   
+
+3. (1 point) Construct a normal plot for ZM's returns. Are ZM's returns non-normal statistically? or practically? or both?
+```{r}
+qqnorm(x)
+qqline(x)
+```
+Both.
+
+4. (1 point) Assume that ZM returns are i.i.d. Using bootstrap with $B=5000$, compute the 95% confidence interval for the kurtosis of ZM log returns. Is this result consistent with what you get in questions 2 and 3?
+```{r}
+library(moments)
+B=5000
+len=length(x)
+sample_kurtosis=rep(0,B)
+for (b in 1:B){
+  xstar=sample(x,len,replace=TRUE)
+  sample_kurtosis[b]=kurtosis(xstar)
+}
+
+
+theta_hat=kurtosis(x)
+qu_star=quantile(sample_kurtosis,probs=0.975)
+ql_star=quantile(sample_kurtosis,probs=0.025)
+u=2*theta_hat-qu_star
+l=2*theta_hat-ql_star
+u
+l
+```
+
+
+
+5. (1 point) Suppose you want to test whether there is strong enough evidence that $\mu_{zm}<\mu_{tsla}$. Write down the null hypothesis $H_0$ and the alternative hypothesis $H_1$. 
+$H_1$:$\mu_{D}<\mu_{0}=0$
+$H_0$:$\mu_{D}=\mu_{0}$
+
+
+
+
+6. (1 point) Assume that $D_i$'s are i.i.d. and the sample size is large enough for the central limit theorem to apply. Give the test statistic and the corresponding sampling distribution. 
+test statistic:$Z_0$=($\overline{D_n}$-$\mu_{0}$)/($\S_n}$/$\sqrt{n}$)
+by CLT,($\overline{D_n}$-$\mu_{0}$)/($\S_n}$/$\sqrt{n}$)~N(0,1)
+
+
+7. (1 point) For significance level $\alpha$, determine the criteria for rejecting $H_0$ in support of $H_1$ in terms of $\bar{D}_n$: i.e., for what values of $\bar{D}_n$, will $H_0$ be rejected? For the data given, will $H_0$ be rejected at significance level $\alpha=5\%$?
+
+reject $H_0$ if $\mid$$Z_0$$\mid$>$Z_{a/2}$
+```{r}
+alpha=0.05
+zscore=qnorm(1-alpha)
+mu0-zscore*se
+isTRUE(abs(z0)>zscore)
+```
+$H_0$ will not be rejected at significance level $\alpha=5\%$.
+$H_0$ will be rejected when $\overline{D_n}$<-0.005359872
+
+
+8. (1 point) Construct the one-sided confidence interval for $\mu_{zm}-\mu_{tsla}$ corresponding to question 7. Is the confidence interval consistent with your conclusion in question 7?
+```{r}
+isTRUE(mean(D)<mu0-zscore*se)
+ub=mean(D)+zscore*se
+ub
+```
+(-$\infty$,0.004783379)
+yes.
+
+
+9. (1 point) Give the formula for the p-value of the test in question 7. Compute the p-value.
+```{r}
+z0=mean(D)/se
+p_value=pnorm(z0)
+p_value
+```
+
+
+
+
+10. (1 point) For what significance level $\alpha$, will $H_0$ be rejected in support of $H_1$ in question 7?
+
+0.4297872
+

@@ -1,0 +1,27 @@
+library(ISLR)
+n=nrow(Smarket)
+Smarket[c(1:3,(n-2):n),]
+setwd("C:/Users/Wang/source/R/IE522")
+dates=read.csv("ISLRSmarketDates.csv",header=TRUE)
+sp=data.frame(dates,Smarket[,-1])
+sp[c(1:3,(n-2):n),]
+hist(sp$Today,breaks=50,prob=TRUE,col="cyan")
+Today_mean=mean(sp$Today,na.rm=TRUE)
+Today_sd=sd(sp$Today,na.rm=TRUE)
+curve(dnorm(x,Today_mean,Today_sd),add=TRUE,col="red",lwd=2)
+dlaplace(sp$Today,Today_mean,Today_sd)
+curve(dlaplace(x,Today_mean,Today_sd),add=TRUE,col="red",lwd=2)
+lines(density(sp$Today,adjust=1/4,na.rm=TRUE),col="red",lwd=3)
+lines(density(sp$Today,adjust=4,na.rm=TRUE),col="blue",lwd=3)
+boxplot(sp$Today,names=c("Today"))
+min(sp$Today)
+which(sp$Today==-4.922)
+sp[169,]
+round(cor(sp[,2:8]),digits=3)
+plot(sp[,2:8])
+sp$Date[1]
+d<-as.Date(sp$Date[1],"%m/%d/%Y")
+d[1]
+class(d[1])
+library(xts)
+sp_ts<-xts(sp[,-1],order.by = d)

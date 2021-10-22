@@ -1,0 +1,59 @@
+#1
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("exp.csv",header=TRUE,fileEncoding="UTF-8-BOM")
+n=nrow(data)
+n
+xbar=mean(data$sample)
+lamda=1/xbar
+print(lamda)
+#2
+cita=xbar
+print(cita)
+#3
+fisher=n/(lamda*lamda)
+print(fisher)
+#4
+se=sqrt(1/fisher)
+print(se)
+#5
+z1=qnorm(0.975)
+l=cita-z1*se
+u=cita+z1*se
+print(l)
+print(u)
+
+#6
+df=read.csv("ZMTSLA(1).csv",header=TRUE,fileEncoding="UTF-8-BOM")
+m=nrow(df)
+price=df$ZM
+x=log(price[2:m]/price[1:(m-1)])
+Fhat=ecdf(x)
+plot(Fhat,verticals=TRUE,do.points=FALSE)
+#7
+library(moments)
+print(kurtosis(x,na.rm=TRUE))
+#8
+B=5000
+len=length(x)
+sample_medians=rep(0,B)
+sample_means=rep(0,B)
+sample_kurtosis=rep(0,B)
+for (b in 1:B){
+  xstar=sample(x,len,replace=TRUE)
+  sample_medians[b]=median(xstar)
+  sample_means[b]=mean(xstar)
+  sample_kurtosis[b]=kurtosis(xstar)
+}
+hist(sample_kurtosis)
+print(sample_kurtosis)
+#9
+print(sd(sample_kurtosis))
+#10
+num=0
+for (i in 1:B){
+  if (sample_kurtosis[i] >=6){
+    num=num+1
+  }
+}
+p=num/B
+p

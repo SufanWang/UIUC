@@ -1,0 +1,136 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+ ---
+title: IE 522 HW08
+date:2020/10/26 
+author: Wang Sufan
+output: pdf_document
+ ---
+```{r}
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("ZMTSLA(3).csv",header=TRUE,fileEncoding="UTF-8-BOM")
+m=nrow(data)
+price_zm=data$ZM
+x=log(price_zm[2:m]/price_zm[1:(m-1)])
+n=length(x)
+```
+
+
+
+
+The file ZMTSLA.csv contains daily prices of ZM. Compute ZM's daily log returns. 
+
+1. (1 point) Conduct a runs test for ZM's daily log returns. Is there strong evidence against the randomness of the daily returns at significance level $\alpha=5\%$? 
+```{r}
+library(randtests)
+runs.test(x,alternative="two.sided",threshold=median(x),pvalue="normal",
+          plot=FALSE)
+```
+p-value>0.05,so accept H0, there is no strong evidence against the randomness of the daily returns at significance level $\alpha=5\%$.
+
+2. (1 point) Assume that ZM's daily log returns are i.i.d. Assume that one trading day equals $t=1/252$ year. Fit a Black-Scholes-Merton model to ZM's daily log returns. Report $\mu$, $\sigma$ and the corresponding value of the log likelihood function.  
+```{r}
+t=1/252
+initialvalueBSM=c(0,0.2);
+BSM=function(x,theta){exp(-(x-theta[1]*t)^2/(2*theta[2]^2*t))/sqrt(2*pi*theta[2]^2*t)}
+resultBSM=optim(initialvalueBSM,fn=function(theta){-sum(log(BSM(x,theta)))},method="L-BFGS-B")
+resultBSM
+```
+$\mu$:1.334007
+$\sigma$:0.7362854 
+The corresponding value of the log likelihood function:588.0812.
+
+    
+
+3. (1 point) Fit a NIG model to ZM's daily log returns. Report the parameters $\alpha,\beta,\delta,\mu$ and the corresponding value of the log likelihood function.
+```{r}
+initialvalueNIG=c(10,0,2,0)
+NIG=function(x,theta){theta[1]*theta[3]*t/pi*
+    besselK(theta[1]*sqrt(theta[3]^2*t^2
+                          +(x-theta[4]*t)^2),1)/
+    (sqrt(theta[3]^2*t^2+(x-theta[4]*t)^2))*
+    exp(theta[3]*sqrt(theta[1]^2-theta[2]^2)*t+
+          theta[2]*(x-theta[4]*t))}
+resultNIG=optim(initialvalueNIG,fn=function(theta){-sum(log(NIG(x,theta)))},method="L-BFGS-B")
+resultNIG
+```
+$\alpha,\beta,\delta,\mu$ is 16.454078, 2.349904,  8.508050, 0.106342.
+The corresponding value of the log likelihood function is 627.4659.
+
+
+4. (1 point) Compute AIC for both cases. In terms of AIC, which model is fitting the data better? 
+```{r}
+AIC_BSM=-2*(588.0812-2)
+AIC_NIG=-2*(627.4659-4)
+AIC_BSM
+AIC_NIG
+```
+NIG is fitting the data better.
+
+
+
+5. (1 point) Construct the histogram (density) of ZM's daily log returns, and add your BSM and NIG fits to the histogram. Graphically, which model provides a better fit? 
+```{r}
+hist(x,breaks=30,prob=TRUE,ylim=c(0,20));
+thetaNIG=resultNIG$par;
+thetaBSM=resultBSM$par;
+curve(NIG(x,thetaNIG),add=TRUE,col="blue",lwd=2,lty=2)
+curve(BSM(x,thetaBSM),add=TRUE,col="red",lwd=2,lty=1)
+legend("topright",c("NIG","BSM"),col=c("blue","red"),
+       lty=2:1)
+```
+
+
+
+
+6. (1 point) Compute the sample mean, variance, skewness and kurtosis of ZM's daily log returns. 
+```{r}
+library(moments)
+m=mean(x)
+v=(sd(x))^2
+s=skewness(x)
+k=kurtosis(x)
+m
+v
+s
+k
+```
+
+
+
+
+7. (1 point) Fit the NIG model using moment matching. Report the parameters you obtain. Do the moment matching estimates maximize the log likelihood function? Why? 
+```{r}
+alpha=3*sqrt(3*k-9-4*s^2)/(sqrt(v)*(3*k-9-5*s^2))
+beta=3*s/(sqrt(v)*(3*k-9-5*s^2))
+gamma=sqrt(alpha^2-beta^2)
+delta=9/((3*k-9-4*s^2)*gamma*t)
+mu=(m*gamma-beta*delta*t)/(gamma*t)
+MMestimates=c(alpha,beta,delta,mu)
+MMestimates
+sum(log(NIG(x,MMestimates)))
+```
+$\alpha,\beta,\delta,\mu$ is 15.3997719  4.0914736  7.5013727 -0.7332863.
+The moment matching estimates does not maximize the log likelihood function, because the value of the function is smaller than the result estimated by MLE.
+
+8. Consider a time series $Y=\{Y_1,Y_2,\cdots,Y_T\}$ where $Y_t, 1\le t\le T$ are i.i.d. with finite mean and variance, and probability density function $p(x)$. 
+    - (1 point) Is $Y$ strictly stationary? Why? 
+    - (1 point) Is $Y$ weakly stationary? Why? 
+    - (1 point) Is $Y$ a white noise? Why? 
+
+$Y$ is strictly stationary because  for any $t,s_1, · · · ,s_n$,$(Y_{si}, · · · , Y_{sn}) ∼ (Y_{t+s_1}, · · · , Y_{t+s_n})$ if $Y=\{Y_1,Y_2,\cdots,Y_T\}$ where $Y_t, 1\le t\le T$ are i.i.d.
+
+$Y$ is weakly stationary because Strictly stationary process with finite covariances is weakly
+stationary.
+
+$Y$ is not a white noise when the mean of $Y_t$ is not 0.
+
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("HW3Data.csv",header=TRUE,fileEncoding="UTF-8-BOM")
+n=nrow(data)
+data_bar=mean(data$sample,na.rm=TRUE)
+data_bar
+data_std=sd(data$sample,na.rm=TRUE)
+z=qnorm(1-0.025)
+l=data_bar-z*data_std/sqrt(1600)
+u=data_bar+z*data_std/sqrt(1600)
+l
+u

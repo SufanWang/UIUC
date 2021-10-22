@@ -1,0 +1,143 @@
+---
+title: "IE 522 HW13"
+author: "Wang Sufan"
+date: "2020/12/12"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+The data set USMacroG in the AER package contains quarterly macroeconomic variables from 1950 to 2000. Click [HERE](https://www.rdocumentation.org/packages/AER/versions/1.2-9/topics/USMacroG)  for details. We want to predict changes in consumption from changes in the other variables. In all of the regression fitting below, it's assumed that the constant regressor is included, and significance level is 1% for all tests. 
+
+```{r,warning=FALSE,message=FALSE}
+library(AER)
+data("USMacroG")
+Macro=as.data.frame(apply(USMacroG,2,diff))
+```
+
+1. (1 point) When consumption is regressed against the other 11 variables, what's the SSE (error sum of squares)? What's the corresponding degrees of freedom? (Warning: there are rows containing NA)
+```{r}
+library("tidyr")
+Macro=Macro%>%drop_na()
+fit1=lm(consumption~.,Macro)
+summary(fit1)
+
+```
+```{r}
+anova(fit1)
+```
+
+SSE=30670,the corresponding degrees of freedom is 190.
+
+
+2. (1 point) In Q1, what are the SST and SSR? 
+```{r}
+SSE=30670
+R_2=0.7533
+SST=SSE/(1-R_2)
+SST
+```
+```{r}
+SSR=SST-SSE
+SSR
+```
+3. (1 point) In Q1, is $H_0: \beta_{m1}=0$ rejected? What if m1 is the only regressor? Does m1 contain useful information for explaining consumption? 
+
+ $H_0: \beta_{m1}=0$ is not rejected,because the p value of it is 0.17873>1%.
+ if m1 is the only regressor:
+```{r}
+fit2=lm(consumption~m1,Macro)
+summary(fit2)
+```
+$H_0: \beta_{m1}=0$ is rejected,m1 contains useful information for explaining consumption
+
+
+4. (1 point) In Q1, what is the null hypothesis for the F-test? Is it rejected? Are there useful regressors for explaining consumption? 
+
+  $H_0: \beta_{m1}=\beta_{gdp}=...\beta_{interest}=0$,it is rejected,gdp,invest,government and dpi are useful regressors for explaining consumption.
+
+
+
+
+5. (1 point) Using best subset selection and Mallow's $C_p$ as a measure of goodness, find the best linear model. Provide the corresponding regression equation.
+```{r}
+library(leaps)
+fit3=regsubsets(consumption~.,Macro,nvmax=11)
+result=summary(fit3)
+result
+```
+```{r}
+names(result)
+```
+```{r}
+plot(result$cp,xlab="# of regressors",ylab="cp",type="b")
+j=which.min(result$cp)
+points(j,result$cp[j],col="red",cex=2,pch=20)
+```
+
+```{r}
+coef(fit2,j)
+```
+$Y= -3.0510494+0.7965592*X_{gdp}-0.7532173*X_{invest}-0.5838572*X_{govenment}+0.1026401*X_{dpi}+8.5459340*X_{population}-0.6407097*X_{interest}+\epsilon$
+
+6. (1 point) Without actually running forward selection, can you tell whether forward selection will give the same result as best subset selection? Why? 
+ Forward selection will give the same result as best subset selection,because the best subset selction does not drop any variable which was previously selected.
+
+
+
+
+7. (1 point) Take the best 3-predictor model from Q5. Consider a model with these three predictors and all possible interaction terms of the three predictors. Is any interaction term significant? 
+```{r}
+fit4=regsubsets(consumption~.,Macro,nvmax=3)
+result2=summary(fit4)
+result2
+
+```
+```{r}
+
+plot(result2$cp,xlab="# of regressors",ylab="cp",type="b")
+i=which.min(result2$cp)
+points(i,result2$cp[i],col="red",cex=2,pch=20)
+```
+
+```{r}
+fit5=lm(consumption~gdp*invest*government,Macro)
+summary(fit5)
+```
+None of the interaction term  is significant.
+8. (1 point) Use the best model you obtain in Q5. Is there any obvious violation of linearity and constant variance assumptions? 
+```{r}
+fit6=lm(consumption~gdp+invest+government+dpi+population+interest,Macro)
+plot(fit6$fitted.values,fit6$residuals)
+abline(0,0)
+```
+
+There is not any obvious violation of linearity and constant variance assumptions.
+  
+9. (1 point) Use the best model you obtain in Q5. Is the assumption of zero correlation for the error terms violated? 
+```{r}
+acf(fit6$residuals)
+```
+```{r}
+library(forecast)
+auto.arima(fit6$residuals)
+```
+Zero correlation for the error terms is violated.
+
+
+10. (1 point) Use the best model you obtain in Q5. What's the theoretical average of the leverages of the observations? How many observations have an leverage that is greater than 3 times of the above average and with $|\mbox{studentized residual}|>3$? 
+```{r}
+n=nrow(Macro)-1
+k=7
+theoretical_average=k/n
+theoretical_average
+```
+```{r}
+m=3*theoretical_average
+hatvalue=hatvalues(fit6)
+```
+```{r}
+which(hatvalue>m)
+which(abs(rstandard(fit6))>3)
+```  

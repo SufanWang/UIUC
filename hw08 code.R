@@ -1,0 +1,70 @@
+setwd("C:/Users/Wang/source/R/IE522")
+data=read.csv("ZMTSLA(3).csv",header=TRUE,fileEncoding="UTF-8-BOM")
+m=nrow(data)
+price_zm=data$ZM
+x=log(price_zm[2:m]/price_zm[1:(m-1)])
+n=length(x)
+
+#1.
+library(randtests)
+runs.test(x,alternative="two.sided",threshold=median(x),pvalue="normal",
+          plot=FALSE)
+#2
+t=1/252
+mu=mean(x)/t
+sigma=sqrt((n-1)/n)*sd(x)/sqrt(t)
+loglikelihoodBSM=-n*log(2*pi*sigma^2*t)/2-
+  (n-1)*sd(x)^2/(2*sigma^2*t)
+mu
+sigma
+loglikelihoodBSM
+
+#BSM: theta[1]=mu, theta[2]=sigma
+initialvalueBSM=c(0,0.2);
+BSM=function(x,theta){exp(-(x-theta[1]*t)^2/(2*theta[2]^2*t))/sqrt(2*pi*theta[2]^2*t)}
+resultBSM=optim(initialvalueBSM,fn=function(theta){-sum(log(BSM(x,theta)))},method="L-BFGS-B")
+resultBSM
+#3
+#NIG: theta[1]=alpha, theta[2]=beta, theta[3]=delta,
+# theta[4]=mu
+initialvalueNIG=c(10,0,2,0)
+NIG=function(x,theta){theta[1]*theta[3]*t/pi*
+    besselK(theta[1]*sqrt(theta[3]^2*t^2
+                          +(x-theta[4]*t)^2),1)/
+    (sqrt(theta[3]^2*t^2+(x-theta[4]*t)^2))*
+    exp(theta[3]*sqrt(theta[1]^2-theta[2]^2)*t+
+          theta[2]*(x-theta[4]*t))}
+resultNIG=optim(initialvalueNIG,fn=function(theta){-sum(log(NIG(x,theta)))},method="L-BFGS-B")
+resultNIG
+#4
+AIC_BSM=-2*(loglikelihoodBSM-2)
+AIC_NIG=-2*(627.4659-4)
+AIC_BSM
+AIC_NIG
+#5
+hist(x,breaks=30,prob=TRUE,ylim=c(0,20));
+thetaNIG=resultNIG$par;
+thetaBSM=resultBSM$par;
+curve(NIG(x,thetaNIG),add=TRUE,col="blue",lwd=2,lty=2)
+curve(BSM(x,thetaBSM),add=TRUE,col="red",lwd=2,lty=1)
+legend("topright",c("NIG","BSM"),col=c("blue","red"),
+       lty=2:1)
+#6
+library(moments)
+m=mean(x)
+v=(sd(x))^2
+s=skewness(x)
+k=kurtosis(x)
+m
+v
+s
+k
+#7
+alpha=3*sqrt(3*k-9-4*s^2)/(sqrt(v)*(3*k-9-5*s^2))
+beta=3*s/(sqrt(v)*(3*k-9-5*s^2))
+gamma=sqrt(alpha^2-beta^2)
+delta=9/((3*k-9-4*s^2)*gamma*t)
+mu=(m*gamma-beta*delta*t)/(gamma*t)
+MMestimates=c(alpha,beta,delta,mu)
+MMestimates
+sum(log(NIG(x,MMestimates)))

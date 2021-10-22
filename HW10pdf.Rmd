@@ -1,0 +1,122 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+ ---
+title: IE 522 HW10
+date:2020/11/10
+author: Sufan Wang
+output: pdf_document
+ ---
+
+In the following, $\{\epsilon_t\}$ is a white noise with variance $\sigma^2_\epsilon$.
+
+Consider the time series model given by the following equation (1): 
+\begin{equation}
+    Y_t-\mu=\phi_1(Y_{t-1}-\mu)+\phi_2(Y_{t-2}-\mu)+\epsilon_t ,
+\end{equation}
+where $\phi_1=-0.3, \phi_2=0.1, \sigma_\epsilon^2=1$. Finish questions 1-6.
+
+1. (1 point) What are the roots of $\phi(z)=1-\phi_1z-\phi_2z^2$?  
+
+
+
+
+
+2. (1 point) Is $\{Y_t\}$ stationary? Why? 
+
+
+
+
+    
+3. (1 point) What's the Yule-Walker equation relating $\gamma(0)$ and $\gamma(1)$? 
+
+
+
+
+
+4. (1 point) What are $cov(Y_{t-1},\epsilon_t)$ and $cov(Y_{t-2},\epsilon_t)$?
+
+
+
+
+
+5. (1 point) Using results in question 4, compute the variance of the two sides of equation (1) to get another relationship for $\gamma(0)$ and $\gamma(1)$. Using this and the relationship in question 3, compute $\gamma(0)$ and $\gamma(1)$.
+
+
+
+
+
+6. (1 point) Suppose the model in equation (1) is expanded to an ARMA(2,1) model: 
+    \begin{equation}
+        Y_t-\mu=\phi_1(Y_{t-1}-\mu)+\phi_2(Y_{t-2}-\mu)+\epsilon_t+\theta_1\epsilon_{t-1} ,
+    \end{equation}
+    where $\theta_1=2$, $\phi_1, \phi_2, \sigma^2_\epsilon$ stay the same. Is $\{Y_t\}$ stationary? 
+
+
+
+
+
+7. (1 point) Consider a stationary AR(1) process $\{Y_t, 1\le t\le n\}$ satisfying 
+$$
+    Y_t-\mu=\phi_1(Y_{t-1}-\mu)+\epsilon_t ,
+$$
+where $\{\epsilon_t\}$ is Gaussian. What's the distribution of $(Y_1,\cdots,Y_n)^\top$? Give the mean vector and covariance matrix. 
+
+
+
+
+
+8. (1 point) For a dataset $\{y_t,1\le t\le n\}$, suppose the exact maximum likelihood estimation is used to fit an AR(1) model to the data. Provide the log-likelihood function for this problem. 
+
+
+
+The following dataset contains 6146 log returns of BMW from 1973 to 1996. 
+
+
+9. (1 point) Suppose AIC is used for model comparison. What MA($q$) model with $q$ up to 3 fits bmw the best? What AR($p$) model with $p$ up to 3 fits bmw the best? Give parameters of the fits. 
+```{r}
+library(evir)
+data(bmw)
+r=bmw[]
+MAaic=rep(0,3)
+for (i in 1:3){
+result_1=arima(r,order=c(0,0,i))
+MAaic[i]=result_1$aic
+}
+MAaic
+```
+```{r}
+arima(r,order=c(0,0,2))
+```
+MA(2) fits the data best with parameters ma1=0.0828,ma2=-0.0213,$\mu=3e-04$,sigma^2 estimated as 0.0002161.
+```{r}
+ARaic=rep(0,3)
+for (i in 1:3){
+result_2=arima(r,order=c(i,0,0))
+ARaic[i]=result_2$aic
+}
+ARaic
+```
+```{r}
+arima(r,order=c(2,0,0))
+```
+AR(2) fits the data best,with parameters:ar1=0.0833,ar2=-0.0273,$\mu=3e-04$,sigma^2 estimated as 0.0002161.
+
+10. (1 point) Suppose AIC is used for model comparison. What ARMA($p$,$q$) model with $(p,q)$ up to $(3,3)$ fits bmw the best? Give parameters of the fit. 
+```{r}
+ARMAaic=rep(0,9)
+for (i in 1:3){
+    for (j in 1:3){
+        result_3=arima(r,order=c(i,0,j))
+        ARMAaic[(i-1)*3+j]=result_3$aic
+        print(ARMAaic[(i-1)*3+j])
+    }
+}
+
+```
+```{r}
+arima(r,order=c(1,0,1))
+```
+ARMA(1,1) fits the data best, with parameters:ar1=-0.2278,ma1=0.3122,$\mu$=4e-04,sigma^2 estimated as 0.0002161.

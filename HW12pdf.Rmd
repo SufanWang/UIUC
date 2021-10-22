@@ -1,0 +1,108 @@
+---
+title: "IE 522 HW12"
+author: "Sufan Wang"
+date: "2020/11/29"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+Consider the simple linear regression model $Y=\beta_1+\beta_2X+\epsilon$, where $\epsilon\sim N(0,\sigma^2)$. There are two sets of data of the same size $n=500$ from this model: $\{(X_{1i},Y_{1i}),1\le i\le n\}$ and $\{(X_{2i},Y_{2i}),1\le i\le n\}$. 
+
+1. (1 point) According to the following scatter plots, which data set will give a more precise estimate for $\beta_2$? Why? 
+  
+X2 will give a more precise estimate for β2, because the data of X2 are more dispersive, which will result in larger $\sqrt{Sxx}$, and smaller standard error of $\beta$.
+
+
+
+2. (1 point) The sample mean and sample variance of $\{X_{1i},1\le i\le n\}$ are 4.98 and 0.10, respectively. The sample mean and sample variance of $\{X_{2i},1\le i\le n\}$ are 4.90 and 2.73, respectively. Which data set will give a more precise estimate for $\beta_1$? Why? 
+
+(4.98^2)/(0.1*499)=0.497002
+(4.9^2)/(2.73*499)=0.01762499
+X2 will give a more precise estimate for $\beta_1$,because estimated standard error of $\beta_1$ is $\sigma\sqrt{\frac{1}n+\frac{\bar{X}_n^2}{Sxx}}$.
+
+
+
+
+In the following, $\{(X_{2i},Y_{2i}),1\le i\le n\}$ is used to fit the simple linear regression model.
+
+3. (1 point) The sample variance of $\{Y_{2i},1\le i\le n\}$ is $3.56$. What's the total sum of squares? 
+SST=3.56*499=1776.44
+The total sum of squares is 1776.44.
+
+
+
+
+4. (1 point) The residual standard error is $0.997$. What's the corresponding error sum of squares?
+ 
+SSE=0.997^2*498= 495.016482
+The corresponding error sum of squares is 495.016482.
+
+
+
+5. (1 point) What's the regression sum of squares? 
+
+SSR=SST-SSE=1281.423518
+The regression sum of squares is 1281.423518
+
+
+  
+6. (1 point) What's $R^2$? What's the sample correlation coefficient between $\{X_{2i},1\le i\le n\}$ and $\{Y_{2i},1\le i\le n\}$? 
+
+$R^2$=SSR/SST=1281.423518/1776.44=0.7213435
+$R^2$ is 0.7213435.
+
+rho = $\sqrt{R^2}$= 0.8493195
+The sample correlation coefficient between $\{X_{2i},1\le i\le n\}$ and $\{Y_{2i},1\le i\le n\}$ is 0.8493195.
+
+
+
+7. (1 point) The sample mean of $\{Y_{2i},1\le i\le n\}$ is $14.9$. What are $\hat{\beta}_1$ and $\hat{\beta}_2$? 
+
+Sxx = 2.73*499
+$\hat{\beta}_2$ = $\sqrt{SST/Sxx*R^2}$=0.9698727
+$\hat{\beta}_1$ = 14.9 -$\hat{\beta}_2$*4.9=10.14762
+
+
+
+  
+8. (1 point) What's the 95% confidence interval for $\beta_2$? At a significance level of $\alpha=5\%$, is there strong enough evidence that $\beta_2\neq 0$?
+```{r}
+beta_2_hat=0.9698727
+beta_1_hat=10.14762
+S_xx=2.73*499
+lb=beta_2_hat-qt(0.975,498)*0.997/sqrt(S_xx)
+ub = beta_2_hat+qt(0.975,498)*0.997/sqrt(S_xx)
+lb
+ub
+```
+
+The 95% confidence interval for $\beta_2$ is [0.9168003,1.022945],there is not strong enough evidence that $\beta_2\neq 0$.
+
+  
+9. (1 point) What's the p-value of the F-test for testing $H_0: \beta_2=0; H_1: \beta_2\neq 0$? 
+```{r}
+SSE=495.016482
+SSR=1281.423518
+pf(SSR*498/SSE,1,498, lower.tail = FALSE)
+```
+
+
+
+
+10. (1 point) For a new observation $X^*=1$, compute the predicted value $\hat{Y}^*$. Construct a 95% prediction interval for the true value $Y^*$.  
+
+```{r}
+m=beta_1_hat+beta_2_hat*1
+m
+
+```
+The predicted value $\hat{Y}^*$ is 11.11749.
+```{r}
+ub2 = m + qt(0.975,498)*0.997*sqrt(1+1/500+(4.9-1)^2/S_xx)
+lb2 = m - qt(0.975,498)*0.997*sqrt(1+1/500+(4.9-1)^2/S_xx)
+ub2
+lb2
+```  
+
+95% prediction interval for the true value $Y^*$ is[9.145796,13.08919].
